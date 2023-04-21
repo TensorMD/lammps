@@ -1,0 +1,122 @@
+LAMMPS (4 May 2022)
+  using 1 OpenMP thread(s) per MPI task
+variable                    T equal 300
+variable                    R equal 984523
+
+units		                metal
+dimension                   3
+boundary	                p p p
+atom_style	                atomic
+
+lattice                     bcc 3.189
+Lattice spacing in x,y,z = 3.189 3.189 3.189
+region                      box block 0 16 0 16 0 16
+create_box                  1 box
+Created orthogonal box = (0 0 0) to (51.024 51.024 51.024)
+  2 by 2 by 4 MPI processor grid
+create_atoms                1 box
+Created 8192 atoms
+  using lattice units in orthogonal box = (0 0 0) to (51.024 51.024 51.024)
+  create_atoms CPU = 0.003 seconds
+read_dump                   ../fnn/dump.fnn 20 x y z
+Scanning dump file ...
+Reading snapshot from dump file ...
+  orthogonal box = (0 0 0) to (51.024 51.024 51.024)
+  8192 atoms before read
+  8192 atoms in snapshot
+  0 atoms purged
+  8192 atoms replaced
+  0 atoms trimmed
+  0 atoms added
+  8192 atoms after read
+
+pair_style	                tensormd
+pair_coeff	                * * ../../../../W_k32_snapshot.npz W interp 0.0001 1
+Use interpolation: dr = 0.0001, algo = batch
+
+mass                        1 183.8
+
+neighbor                    1.0 bin
+neigh_modify                every 1 delay 0 check yes
+
+thermo                      1
+thermo_style                custom step cpu temp ke pe etotal press vol pxx pyy pzz
+
+velocity                    all create $T $R dist gaussian
+velocity                    all create 300 $R dist gaussian
+velocity                    all create 300 984523 dist gaussian
+fix                         1 all nvt temp $T $T 0.1
+fix                         1 all nvt temp 300 $T 0.1
+fix                         1 all nvt temp 300 300 0.1
+dump                        1 all custom 1 dump.interp id type x y z fx fy fz
+dump_modify 1 format float "% 20.14f"
+
+run                         1
+Neighbor list info ...
+  update every 1 steps, delay 0 steps, check yes
+  max neighbors/atom: 2000, page size: 100000
+  master list distance cutoff = 7
+  ghost atom cutoff = 7
+  binsize = 3.5, bins = 15 15 15
+  1 neighbor lists, perpetual/occasional/extra = 1 0 0
+  (1) pair tensormd, perpetual
+      attributes: full, newton on
+      pair build: full/bin/atomonly
+      stencil: full/bin/3d
+      bin: standard
+Per MPI rank memory allocation (min/avg/max) = 121.1 | 122.6 | 124.7 Mbytes
+   Step          CPU            Temp          KinEng         PotEng         TotEng         Press          Volume          Pxx            Pyy            Pzz      
+        20   0              300            317.63095     -104639.27     -104321.64      6330.3248      132838.36      6295.5312      6313.3191      6382.1241    
+        21   0.035117142    290.26833      307.32736     -104628.97     -104321.64      6760.2461      132838.36      6724.8439      6741.75        6814.1444    
+Loop time of 0.0351413 on 16 procs for 1 steps with 8192 atoms
+
+Performance: 2.459 ns/day, 9.761 hours/ns, 28.457 timesteps/s
+98.5% CPU use with 16 MPI tasks x 1 OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0.027627   | 0.029631   | 0.032431   |   0.9 | 84.32
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0.00014752 | 0.0027162  | 0.0049364  |   3.0 |  7.73
+Output  | 0.0024393  | 0.0024417  | 0.0024547  |   0.0 |  6.95
+Modify  | 4.1681e-05 | 0.00030523 | 0.0010403  |   0.0 |  0.87
+Other   |            | 4.761e-05  |            |       |  0.14
+
+Nlocal:            512 ave         530 max         499 min
+Histogram: 5 0 2 0 2 3 0 2 1 1
+Nghost:           2161 ave        2174 max        2143 min
+Histogram: 1 1 2 0 3 2 0 2 0 5
+Neighs:              0 ave           0 max           0 min
+Histogram: 16 0 0 0 0 0 0 0 0 0
+FullNghs:      44371.6 ave       45916 max       43145 min
+Histogram: 2 3 0 2 1 3 1 2 1 1
+
+Total # of neighbors = 709946
+Ave neighs/atom = 86.66333
+Neighbor list builds = 0
+Dangerous builds = 0
+
+
+--------------------------------------------------------------------------
+
+                               FLOPs Report
+
+--------------------------------------------------------------------------
+         alloc:     0.0000 MFlops,       0.0000 secs,       0.0000 MFLOP/s
+         setup:     0.0000 MFlops,       0.0017 secs,       0.0000 MFLOP/s
+   fnn->interp:    27.3940 MFlops,       0.0090 secs,    3033.5209 MFLOP/s
+             P:    57.6717 MFlops,       0.0028 secs,   20871.8526 MFLOP/s
+             Q:     3.6045 MFlops,       0.0007 secs,    5210.6898 MFLOP/s
+             G:     0.0164 MFlops,       0.0001 secs,     137.8447 MFLOP/s
+   nn->compute:   101.7789 MFlops,       0.0035 secs,   29398.1044 MFLOP/s
+          dEdP:     3.6372 MFlops,       0.0009 secs,    4162.3381 MFLOP/s
+            UV:   115.3434 MFlops,       0.0061 secs,   18782.5574 MFLOP/s
+            F1:     3.0188 MFlops,       0.0018 secs,    1644.4627 MFLOP/s
+            F2:     1.9374 MFlops,       0.0025 secs,     782.2905 MFLOP/s
+        forces:     0.5407 MFlops,       0.0003 secs,    1869.2741 MFLOP/s
+--------------------------------------------------------------------------
+       Overall:   314.9430 MFlops,       0.0294 secs,   10705.7009 MFLOP/s
+--------------------------------------------------------------------------
+
+Total wall time: 0:00:00

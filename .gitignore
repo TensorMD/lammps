@@ -17,7 +17,6 @@ a.out
 __pycache__
 
 Obj_*
-log.lammps
 log.cite
 *.bz2
 *.gz
